@@ -30,9 +30,10 @@ var errNoUsableGateway = errors.New("jetbroker: no usable gateway in the workspa
 // gateway_url), its heartbeat-discovered UUID (jet_gw_id), and its hostname (shown to the user as
 // the Gateway name, DVLS-style).
 type chosenGateway struct {
-	BaseURL string
-	ID      string
-	Name    string
+	BaseURL    string
+	BrowserURL string
+	ID         string
+	Name       string
 }
 
 // heartbeat is the subset of GET /jet/heartbeat we consume: the gateway's id (→ jet_gw_id), its
@@ -115,7 +116,7 @@ func (b *Broker) selectGateway(ctx context.Context, candidates []Gateway) (chose
 		idx = int(n.Int64())
 	}
 	pick := group[idx]
-	return chosenGateway{BaseURL: pick.g.BaseURL, ID: pick.id, Name: pick.hostname}, nil
+	return chosenGateway{BaseURL: pick.g.BaseURL, BrowserURL: pick.g.BrowserURL, ID: pick.id, Name: pick.hostname}, nil
 }
 
 // gatewayHeartbeat performs GET /jet/heartbeat with a gateway.heartbeat.read scope token (no
