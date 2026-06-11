@@ -1,0 +1,17 @@
+version: 2
+updates:
+  # Keep the SHA-pinned GitHub Actions current (dependabot bumps the pin + its # vX.Y.Z comment).
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # Go module dependencies.
+  - package-ecosystem: gomod
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 5
