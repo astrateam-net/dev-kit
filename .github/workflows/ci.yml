@@ -3,25 +3,26 @@ name: CI
 on:
   push:
     branches: [main]
-    tags: ["v*"]
   pull_request:
 
-permissions:
-  contents: read
+permissions: {}
 
 concurrency:
-  group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   ci:
+    name: Lint, build, test
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       # Install the exact toolchain pinned in mise.toml / mise.lock (go, golangci-lint,
       # gofumpt, shellcheck), so CI runs the same gates as the local `hk` hooks.
-      - uses: jdx/mise-action@v2
+      - uses: jdx/mise-action@dba19683ed58901619b14f395a24841710cb4925 # v4.1.0
 
       # check (vet + golangci-lint + shellcheck + gofumpt --check) -> build -> test.
       - run: mise run ci
