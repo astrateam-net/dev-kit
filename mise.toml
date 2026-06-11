@@ -1,0 +1,57 @@
+min_version = "2026.6.1"
+
+[settings]
+experimental = true   # required for [hooks] task references
+lockfile = true       # maintain mise.lock for reproducible installs
+
+[tools]
+go = "1.26"
+golangci-lint = "latest"  # Go meta-linter (lint:go)
+gofumpt = "latest"        # stricter gofmt — single fmt source of truth
+shellcheck = "latest"     # lint the .mise/ task scripts (lint:shell)
+hk = "latest"             # git-lifecycle hook manager (sister project of mise); drives hk.pkl
+pkl = "latest"            # config language hk.pkl is written in (hk evaluates it)
+# eza ships no macOS binary on GitHub; aqua provides Linux (CI/devcontainer).
+# On macOS install via `brew install eza`.
+"aqua:eza-community/eza" = { version = "latest", os = ["linux"] }
+
+[env]
+# Run hk git hooks via `mise x` so pinned tools (go, golangci-lint, hk…) resolve
+# even for contributors/agents who haven't activated mise in their shell.
+HK_MISE = 1
+
+# --- Hooks ------------------------------------------------------------------
+# "Open the repo → everything ready." Entering the project installs tools, then
+# self-installs the hk git hooks. Both steps are idempotent, so re-entry is cheap.
+[hooks]
+enter = ["mise install"]
+postinstall = [{ task = "setup" }, "hk install --mise"]
+
+# --- Orchestration ----------------------------------------------------------
+# Leaf tasks live as scripts in .mise/tasks/ (auto-discovered). These are the
+# aggregates: parallel DAGs over the leaf tasks.
+
+[tasks.setup]
+description = "Download Go module dependencies"
+run = "go mod download"
+
+[tasks.vet]
+description = "go vet — all packages"
+run = "go vet ./..."
+
+[tasks.build]
+description = "go build — all packages"
+run = "go build ./..."
+
+[tasks.check]
+description = "All quality gates (vet + lint + fmt-check), in parallel"
+depends = [
+  "vet",
+  "lint:go",
+  "lint:shell",
+  { task = "fmt", args = ["--check"] },
+]
+
+[tasks.ci]
+description = "Full local CI: quality gates + build + test"
+depends = ["check", "build", "test"]

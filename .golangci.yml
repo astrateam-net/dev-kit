@@ -1,0 +1,24 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  # Start from the curated standard set (errcheck, govet, ineffassign,
+  # staticcheck, unused) and add a few low-false-positive checks.
+  default: standard
+  enable:
+    - misspell
+    - unconvert
+  exclusions:
+    # Sensible defaults so clean code passes: deferred Close/Write, common
+    # well-known false positives, and generated files.
+    presets:
+      - std-error-handling
+      - common-false-positives
+    rules:
+      # The dev harness and live test intentionally allow insecure TLS for
+      # self-signed test gateways; already annotated with //nolint:gosec.
+      - path: _test\.go
+        linters:
+          - errcheck

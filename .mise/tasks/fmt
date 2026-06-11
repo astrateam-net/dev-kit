@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+#MISE description="Format Go files with gofumpt (--check to verify only)"
+#MISE dir="{{config_root}}"
+#USAGE flag "--check" help="Verify formatting without writing"
+set -eo pipefail
+
+if [[ "${usage_check:-false}" == "true" ]]; then
+  unformatted="$(gofumpt -l .)"
+  if [[ -n "$unformatted" ]]; then
+    echo "gofumpt: the following files need formatting:" >&2
+    echo "$unformatted" >&2
+    exit 1
+  fi
+else
+  exec gofumpt -w .
+fi

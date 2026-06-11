@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Lint Go with golangci-lint"
+#MISE dir="{{config_root}}"
+#MISE sources=["**/*.go", "go.mod", "go.sum", ".golangci.yml", "mise.lock"]
+#MISE outputs={auto=true}
+set -eo pipefail
+
+exec golangci-lint run ./...

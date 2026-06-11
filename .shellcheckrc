@@ -1,0 +1,9 @@
+# ShellCheck configuration — applies to the mise task scripts under .mise/.
+# Lint runs via `mise run lint:shell` (see .mise/tasks/lint/shell).
+
+# Scripts are bash (#!/usr/bin/env bash); analyze with bash semantics.
+shell=bash
+
+# Follow `source`d files so any shared helpers are checked in context.
+# (The lint task also passes -x; set here so ad-hoc `shellcheck` runs match.)
+external-sources=true

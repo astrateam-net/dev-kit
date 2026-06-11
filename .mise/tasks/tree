@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#MISE description="Show repo structure (eza --tree, respects .gitignore) — for agents instead of find/ls"
+#MISE dir="{{config_root}}"
+#USAGE arg "[path]" default="." help="subtree to show"
+#USAGE flag "-L --level <n>" help="max depth"
+set -eo pipefail
+
+path="${usage_path:-.}"
+depth=()
+[[ -n "${usage_level:-}" ]] && depth=(--level "${usage_level}")
+
+# --git-ignore: skip everything in .gitignore; --all shows dotfiles (.mise);
+# --ignore-glob drops the git dir.
+exec eza --tree --git-ignore --all --ignore-glob '.git' --group-directories-first "${depth[@]}" "$path"

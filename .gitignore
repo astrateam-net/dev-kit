@@ -1,0 +1,19 @@
+# Go build output
+/test-authority
+*.test
+*.out
+
+# test-authority secrets — NEVER commit real creds or keys
+cmd/test-authority/.env
+*.pem
+*.key
+
+# mise — local, per-machine overrides (mise.lock IS committed)
+/mise.local.toml
+
+# macOS
+.DS_Store
+
+# Editors / personal Claude Code settings
+.claude/settings.local.json
+.claude/worktrees/

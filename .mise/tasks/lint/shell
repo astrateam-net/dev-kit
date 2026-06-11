@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+#MISE description="Shellcheck the mise task scripts"
+#MISE dir="{{config_root}}"
+#MISE sources=[".mise/**", "mise.lock"]
+#MISE outputs={auto=true}
+set -eo pipefail
+
+err=0
+while IFS= read -r f; do
+  shellcheck -x "$f" || err=1
+done < <(find .mise/tasks -type f)
+exit "$err"

@@ -1,0 +1,67 @@
+/// hk.pkl — git-lifecycle quality + safety gate for dev-kit.
+///
+/// Tools (hk, pkl, linters) are pinned in mise.toml; HK_MISE=1 runs hooks via
+/// `mise x` so pinned tools resolve for everyone. Hooks self-install through the
+/// mise [hooks] postinstall step (`hk install --mise`) — no manual setup.
+/// Reference: https://hk.jdx.dev
+///
+/// Bypass for a single command (e.g. an intentional commit on main):
+///   HK=0 git commit ...        or    git commit --no-verify
+amends "package://github.com/jdx/hk/releases/download/v1.46.0/hk@1.46.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.46.0/hk@1.46.0#/Builtins.pkl"
+
+// Shared gate: fast Rust-native safety checks + the project lint aggregate.
+// The lint step delegates to `mise run check` — the single source of truth
+// (go vet, golangci-lint, gofumpt --check, shellcheck), already parallelized
+// by mise. Reused by pre-commit, `hk check`, and `hk fix` so there is no drift.
+local gate = new Mapping<String, Step> {
+  ["detect-private-key"]      = Builtins.detect_private_key       // never commit keys/secrets
+  ["check-added-large-files"] = Builtins.check_added_large_files  // backstop for blobs
+  ["check-merge-conflict"]    = Builtins.check_merge_conflict
+  ["trailing-whitespace"]     = Builtins.trailing_whitespace      // auto-fix
+  ["newlines"]                = Builtins.newlines                 // end-of-file fixer (auto-fix)
+  ["lint"] = new Step {
+    check = "mise run check"
+    exclusive = true   // run the aggregate gate on its own, after the quick checks
+  }
+}
+
+hooks {
+  ["pre-commit"] {
+    fix = true          // apply available auto-fixes (whitespace, newlines), then re-stage
+    stash = "git"       // protect unstaged WIP with a 3-way-merge stash
+    steps {
+      // Agents and humans work on branches; block direct commits to main/master.
+      ["no-commit-to-main"] = Builtins.no_commit_to_branch
+      ...gate
+    }
+  }
+
+  // commit-msg — validate the FINAL message (after it's written, before the commit
+  // is created). Rejects anything that isn't Conventional Commits (type(scope):
+  // summary). Catches EVERY commit, including an agent's `git commit -m "..."`.
+  ["commit-msg"] {
+    steps {
+      ["conventional-commit"] = Builtins.check_conventional_commit
+    }
+  }
+
+  // pre-push — if Go sources changed in the commits being pushed, gate the push on
+  // the test suite. No `.go`/go.mod change → step is skipped (fast push).
+  ["pre-push"] {
+    steps {
+      ["go-test"] {
+        glob = List("**/*.go", "go.mod", "go.sum")
+        check = "mise run test"
+      }
+    }
+  }
+
+  // `hk check` / `hk fix` entrypoints (manual + CI). No branch guard here so they
+  // run on any branch; `check` is read-only, `fix` applies auto-fixes.
+  ["check"] { steps = gate }
+  ["fix"] {
+    fix = true
+    steps = gate
+  }
+}
