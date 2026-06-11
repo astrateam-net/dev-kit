@@ -1,0 +1,27 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Install the exact toolchain pinned in mise.toml / mise.lock (go, golangci-lint,
+      # gofumpt, shellcheck), so CI runs the same gates as the local `hk` hooks.
+      - uses: jdx/mise-action@v2
+
+      # check (vet + golangci-lint + shellcheck + gofumpt --check) -> build -> test.
+      - run: mise run ci
