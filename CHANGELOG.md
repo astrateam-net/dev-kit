@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-06-11
+
+### Added
+
+- **jetbroker** — `Gateway.BrowserURL`: an optional browser-facing gateway address. When set, it
+  backs the descriptor URLs the browser opens (the player `gateway_url`, the launch page, and the
+  KDC-proxy URL), while `BaseURL` keeps serving the server-side legs (`/jet/heartbeat` selection and
+  `/jet/preflight` injection). This lets a host send the browser through a front proxy (for example
+  a reverse-proxied subdomain) to a gateway it cannot reach directly. Backward compatible: an empty
+  `BrowserURL` falls back to `BaseURL`, so existing single-address farms are unaffected.
+
 ## [0.1.0] - 2026-06-11
 
 ### Added

@@ -38,8 +38,19 @@ type TargetResolver interface {
 // launch from its /jet/heartbeat response (it becomes jet_gw_id) — never declared, so
 // the module can't drift from the gateway's real id.
 type Gateway struct {
+	// BaseURL is the address the BROKER reaches the gateway at, server-to-server:
+	// /jet/heartbeat (selection) and /jet/preflight (credential injection). It must be
+	// directly reachable by the broker (e.g. an internal farm address).
 	BaseURL string // e.g. "https://gateway.example.com:7171"
-	Weight  int    // DVLS LoadBalancingWeight; <= 0 excludes the member
+
+	// BrowserURL, when set, is the address the BROWSER is sent to instead of BaseURL:
+	// it backs the descriptor's gateway_url (wss .../jet/rdp), the player launch page, and
+	// the KDC proxy URL. Use it when the browser cannot reach BaseURL directly and must go
+	// through a front proxy (e.g. a Coder subdomain app that proxies to the internal gateway).
+	// Empty => the browser uses BaseURL (the gateway is directly browser-reachable).
+	BrowserURL string
+
+	Weight int // DVLS LoadBalancingWeight; <= 0 excludes the member
 }
 
 // GatewayResolver returns the gateway farm available to a workspace. There is NO

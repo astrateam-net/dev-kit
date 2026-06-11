@@ -164,8 +164,15 @@ func (b *Broker) Launch(ctx context.Context, req LaunchRequest) (*LaunchResult, 
 	if displayDomain == "" {
 		displayDomain = b.cfg.Realm
 	}
+	// The browser-facing leg may differ from the server-facing one: heartbeat/preflight (above)
+	// always use gw.BaseURL, but the descriptor URLs the browser opens use gw.BrowserURL when the
+	// host put one there (e.g. a front proxy in front of an internal gateway). Empty => BaseURL.
+	browserBase := gw.BrowserURL
+	if browserBase == "" {
+		browserBase = gw.BaseURL
+	}
 	res := &LaunchResult{
-		GatewayURL:       websocketURL(gw.BaseURL) + "/jet/rdp",
+		GatewayURL:       websocketURL(browserBase) + "/jet/rdp",
 		AssociationToken: assoc,
 		ProxyUsername:    proxy.Username,
 		ProxyPassword:    proxy.Password,
@@ -185,7 +192,7 @@ func (b *Broker) Launch(ctx context.Context, req LaunchRequest) (*LaunchResult, 
 		if err != nil {
 			return nil, err
 		}
-		res.KdcProxyURL = gw.BaseURL + "/jet/KdcProxy/" + kdcToken
+		res.KdcProxyURL = browserBase + "/jet/KdcProxy/" + kdcToken
 	}
 
 	return res, nil
