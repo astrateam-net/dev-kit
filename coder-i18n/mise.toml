@@ -1,0 +1,55 @@
+min_version = "2026.6.1"
+
+# Self-contained i18n factory for the Coder fork. This module uses a Node/TS
+# toolchain, kept isolated from dev-kit's root Go toolchain. `cd coder-i18n`
+# and the tasks below are available; the root `go build ./...` never sees this
+# subtree (no .go files here).
+
+[settings]
+experimental = true
+lockfile = true
+
+[tools]
+# Runtime tools track the machine-wide mise pins (not "latest"):
+# ~/.config/mise/config.toml pins node = 24.16.0; pnpm is mise-managed here.
+node = "24.16.0"
+pnpm = "10.33.2"
+
+[env]
+# Tolgee API key for the CLI (sync/pull). Kept out of git via .env (gitignored).
+_.file = { path = ".env", redact = true }
+
+# --- Dependencies -----------------------------------------------------------
+# Freshness-checked pnpm install: runs only when package.json / lockfile change.
+[deps.node]
+auto = true
+sources = ["package.json", "pnpm-lock.yaml"]
+outputs = ["node_modules/.modules.yaml"]
+run = "pnpm install --frozen-lockfile=false"
+
+[hooks]
+enter = ["mise install", { run = "mise deps" }]
+
+[tasks.setup]
+description = "Install Node dependencies (pnpm)"
+run = "mise deps"
+
+[tasks.check]
+description = "Factory quality gate: biome lint + tsc typecheck"
+depends = ["setup"]
+run = ["pnpm run lint", "pnpm run typecheck"]
+
+# --- i18n factory pipeline --------------------------------------------------
+# Leaf tasks live as scripts in .mise/tasks/i18n/ (source, wrap, sync,
+# translate, pull, bake). i18n:build chains them in strict order — `depends`
+# would run them in parallel, so the pipeline is an ordered `run` array.
+[tasks."i18n:build"]
+description = "Full factory: checkout source -> wrap -> sync -> translate -> pull -> bake"
+run = [
+  "mise run i18n:source",
+  "mise run i18n:wrap",
+  "mise run i18n:sync",
+  "mise run i18n:translate",
+  "mise run i18n:pull",
+  "mise run i18n:bake",
+]

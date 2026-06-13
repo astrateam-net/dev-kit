@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+#MISE description="Push wrapped keys to Tolgee (native extractor over the wrapped source)"
+#MISE dir="{{config_root}}"
+set -eo pipefail
+
+# warnings are dynamic-default strings (template literals) we accept as the
+# manual remainder — continue past them rather than aborting the whole sync.
+exec pnpm exec tolgee sync --yes --continue-on-warning

@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Inject provider + baked catalogs into the site and wrap App in <I18nProvider>"
+#MISE dir="{{config_root}}"
+set -eo pipefail
+
+exec pnpm exec tsx codemod/inject-runtime.ts

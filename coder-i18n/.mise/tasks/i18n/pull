@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="Pull translated catalogs from Tolgee into dist/ (baked staticData)"
+#MISE dir="{{config_root}}"
+set -eo pipefail
+
+exec pnpm exec tolgee pull --path ./dist

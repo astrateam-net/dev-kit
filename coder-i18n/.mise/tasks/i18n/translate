@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+#MISE description="LLM-translate all keys to the target language in Tolgee (AI context + batch)"
+#MISE dir="{{config_root}}"
+set -eo pipefail
+
+exec node tolgee/translate.mjs

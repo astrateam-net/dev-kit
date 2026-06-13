@@ -17,11 +17,21 @@ keeps every module testable on its own and portable if the host platform changes
 
 _More modules will land here over time._
 
+### Build-time factories
+
+Not Go runtime modules — self-contained Node/TS tooling (own `mise.toml`, isolated from the Go
+build) that produces artifacts the Coder fork's image build consumes.
+
+| Factory | What it produces |
+| --- | --- |
+| [`coder-i18n`](coder-i18n/README.md) | Russian localization of the Coder UI: a codemod wraps the frontend literals, Tolgee + OpenAI translate them, and baked `dist/{en,ru}.json` catalogs + a thin `<I18nProvider>` are injected at build time. English stays the source of truth and fallback. |
+
 ## Layout
 
 ```
 jetbroker/            # module: browser-RDP authority (Devolutions Gateway)
 cmd/test-authority/   # dev harness for jetbroker (env-driven, no Coder needed)
+coder-i18n/           # build-time factory: Russian UI localization (Node/TS, isolated toolchain)
 .mise/tasks/          # mise task scripts (lint, fmt, test, tree)
 ```
 

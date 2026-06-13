@@ -43,14 +43,26 @@ run = "go vet ./..."
 description = "go build — all packages"
 run = "go build ./..."
 
-[tasks.check]
-description = "All quality gates (vet + lint + fmt-check), in parallel"
+# Language-scoped gates. dev-kit is polyglot: Go runtime modules (jetbroker, …)
+# and Node/TS build-time factories (coder-i18n). Each language has its own gate;
+# `check` runs both, while the hk hooks (hk.pkl) run only the gate whose files
+# changed, so a Go-only commit never spins up Node and vice versa.
+[tasks."check:go"]
+description = "Go quality gates (vet + golangci-lint + gofumpt --check + shellcheck)"
 depends = [
   "vet",
   "lint:go",
   "lint:shell",
   { task = "fmt", args = ["--check"] },
 ]
+
+[tasks."check:i18n"]
+description = "coder-i18n factory gate (biome + tsc), via its own toolchain"
+run = "mise -C coder-i18n run check"
+
+[tasks.check]
+description = "All quality gates (Go + i18n factories)"
+depends = ["check:go", "check:i18n"]
 
 [tasks.ci]
 description = "Full local CI: quality gates + build + test"

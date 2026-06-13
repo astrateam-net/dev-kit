@@ -1,0 +1,24 @@
+{
+  "name": "@astrateam/coder-i18n",
+  "private": true,
+  "type": "module",
+  "description": "Build-time i18n factory for the Coder fork: codemod-wrap UI literals, sync to Tolgee, bake static catalogs.",
+  "scripts": {
+    "wrap": "tsx codemod/wrap.ts",
+    "extract:print": "tolgee extract print",
+    "extract:check": "tolgee extract check",
+    "sync": "tolgee sync --yes",
+    "pull": "tolgee pull",
+    "lint": "biome check codemod",
+    "lint:fix": "biome check --write codemod",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.4.10",
+    "@tolgee/cli": "^2.16.1",
+    "@types/node": "^25.9.3",
+    "ts-morph": "^28.0.0",
+    "tsx": "^4.22.4",
+    "typescript": "^6.0.3"
+  }
+}

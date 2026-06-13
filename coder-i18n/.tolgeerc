@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.tolgee.io/cli-schema.json",
+  "apiUrl": "http://localhost:8085",
+  "projectId": 8,
+  "format": "JSON_TOLGEE",
+  "parser": "react",
+  "patterns": ["./.upstream/coder/site/src/**/*.{ts,tsx}"],
+  "pull": {
+    "path": "./dist",
+    "delimiter": null,
+    "fileStructureTemplate": "{languageTag}.{extension}"
+  },
+  "push": {
+    "files": [
+      { "path": "./dist/en.json", "language": "en" }
+    ],
+    "forceMode": "OVERRIDE"
+  }
+}

@@ -4,13 +4,22 @@
 #USAGE flag "--check" help="Verify formatting without writing"
 set -eo pipefail
 
+# Operate on TRACKED Go files only. `gofumpt .` walks the filesystem and would
+# descend into gitignored build checkouts (e.g. coder-i18n/.upstream/coder),
+# which are not ours to format; `git ls-files` excludes them and any nested
+# Go module.
+mapfile -t gofiles < <(git ls-files '*.go')
+if [[ "${#gofiles[@]}" -eq 0 ]]; then
+  exit 0
+fi
+
 if [[ "${usage_check:-false}" == "true" ]]; then
-  unformatted="$(gofumpt -l .)"
+  unformatted="$(gofumpt -l "${gofiles[@]}")"
   if [[ -n "$unformatted" ]]; then
     echo "gofumpt: the following files need formatting:" >&2
     echo "$unformatted" >&2
     exit 1
   fi
 else
-  exec gofumpt -w .
+  exec gofumpt -w "${gofiles[@]}"
 fi
