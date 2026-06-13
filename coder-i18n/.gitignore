@@ -1,0 +1,17 @@
+# Mutable Coder source checkout (git worktree at the pinned tag) — regenerated, never committed
+/.upstream/
+
+# Node tooling
+/node_modules/
+
+# Tolgee CLI local cache / saved tokens
+/.tolgee/
+.tolgee-token
+
+# Local env (Tolgee API key, etc.)
+.env
+.env.local
+
+# dist/ IS committed — it is the baked artifact consumed by the Coder fork.
+# …except the codemod's debug key-dump, which is a byproduct, not an artifact.
+/dist/_keys.extracted.json

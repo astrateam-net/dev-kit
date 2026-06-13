@@ -20,9 +20,20 @@ local gate = new Mapping<String, Step> {
   ["check-merge-conflict"]    = Builtins.check_merge_conflict
   ["trailing-whitespace"]     = Builtins.trailing_whitespace      // auto-fix
   ["newlines"]                = Builtins.newlines                 // end-of-file fixer (auto-fix)
-  ["lint"] = new Step {
-    check = "mise run check"
-    exclusive = true   // run the aggregate gate on its own, after the quick checks
+  // Language-scoped lint gates — dev-kit is polyglot (Go runtime modules +
+  // Node/TS build-time factories). Each step runs ONLY when files of its
+  // language are staged, so a Go-only commit never spins up Node, and an
+  // i18n-only commit never runs the Go gate. `glob` matches staged files
+  // (gitignored paths like coder-i18n/.upstream are never staged → never match).
+  ["lint-go"] = new Step {
+    glob = List("**/*.go", "go.mod", "go.sum", ".golangci.yml", ".mise/**", "mise.toml")
+    check = "mise run check:go"
+    exclusive = true
+  }
+  ["lint-i18n"] = new Step {
+    glob = List("coder-i18n/**")
+    check = "mise run check:i18n"
+    exclusive = true
   }
 }
 

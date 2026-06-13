@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- **coder-i18n** — build-time factory for Russian localization of the Coder UI (Node/TS module with
+  its own `mise.toml`, isolated from the Go toolchain). A ts-morph codemod wraps the frontend's
+  string literals into Tolgee `<T>`/`t()` shapes (type-aware — skips components whose `children` is
+  typed `string`), `tolgee sync` + an OpenAI batch (the atlassian-i18n-toolkit method: project
+  glossary → bound prompt → one all-keys batch) translate them, and the baked `dist/{en,ru}.json`
+  catalogs plus a thin `<I18nProvider>` are injected into the frontend. English remains the source
+  of truth and runtime fallback; Russian is the staff default, switchable via `localStorage`. Full
+  pipeline: `mise run i18n:build` (source → wrap → sync → translate → pull → bake). The Coder fork
+  consumes only the baked catalogs + provider; no wrapped sources are committed.
+
+### Changed
+
+- **Tooling** — quality gates are now language-scoped for the polyglot repo. `mise run check`
+  splits into `check:go` (vet, golangci-lint, gofumpt, shellcheck) and `check:i18n` (biome + tsc),
+  and the `hk` pre-commit hook runs only the gate whose files changed — a Go-only commit never
+  spins up Node, and vice versa. `gofumpt` now formats **tracked** Go files only (`git ls-files`),
+  so it no longer descends into gitignored build checkouts such as `coder-i18n/.upstream`.
+
 ## [0.2.0] - 2026-06-11
 
 ### Added

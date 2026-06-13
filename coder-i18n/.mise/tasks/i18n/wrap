@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#MISE description="Wrap UI literals in the Coder source (codemod) + add tolgee runtime deps + format"
+#MISE dir="{{config_root}}"
+set -eo pipefail
+
+# 1) AST codemod: literals -> <T>/t() in parser-recognised shapes
+pnpm exec tsx codemod/wrap.ts "$@"
+
+# 2) runtime deps the wrapped imports need (idempotent)
+( cd .upstream/coder/site && pnpm add @tolgee/react@latest @tolgee/format-icu@latest )
+
+# 3) normalise the codemod's whitespace with Coder's own biome.
+# --relative makes git print paths relative to cwd (site/), so biome resolves them.
+cd .upstream/coder/site
+mapfile -t changed < <(git diff --name-only --relative -- src)
+if [ "${#changed[@]}" -gt 0 ]; then
+	printf '%s\n' "${changed[@]}" | xargs pnpm exec biome format --write
+fi

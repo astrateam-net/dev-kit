@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+#MISE description="Checkout pristine Coder source at the pinned tag into .upstream/coder"
+#MISE dir="{{config_root}}"
+set -eo pipefail
+
+VER="${CODER_VERSION:-v2.34.1}"
+DEST=".upstream/coder"
+
+if [ -d "$DEST/.git" ] || git -C "$DEST" rev-parse --git-dir >/dev/null 2>&1; then
+	echo ">> resetting $DEST to $VER"
+	git -C "$DEST" fetch --depth 1 origin "refs/tags/$VER"
+	git -C "$DEST" reset --hard FETCH_HEAD
+	# drop factory-injected, untracked files (i18n glue) — keep node_modules
+	git -C "$DEST" clean -fdq -- site/src/i18n
+else
+	echo ">> cloning coder@$VER into $DEST"
+	git clone --depth 1 --branch "$VER" https://github.com/coder/coder.git "$DEST"
+fi
+echo ">> source ready: $(git -C "$DEST" describe --tags 2>/dev/null || echo "$VER")"

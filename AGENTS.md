@@ -10,6 +10,15 @@ tool manager; `hk` runs the git hooks.
 - `jetbroker/` — browser-RDP authority driving a Devolutions Gateway. See
   [jetbroker/README.md](jetbroker/README.md).
 
+### Build-time factories (not Go)
+
+Self-contained Node/TS tooling with its own `mise.toml`, isolated from the root Go toolchain
+(`go build ./...` never sees it). Produces artifacts the Coder fork's image build consumes.
+
+- `coder-i18n/` — Russian UI localization factory: codemod-wraps the Coder frontend, translates via
+  Tolgee + OpenAI, bakes `dist/{en,ru}.json` + a thin `<I18nProvider>`. See
+  [coder-i18n/README.md](coder-i18n/README.md). Pipeline: `mise run i18n:build`.
+
 ## Commands (mise)
 
 | Action | Command |
