@@ -5,29 +5,27 @@
  *
  * Catalogs are baked as `staticData` (lazy per-language chunks), so the running
  * app never contacts a Tolgee server — no apiKey here, DevTools is stripped by
- * NODE_ENV in production builds. English is the source of truth and fallback;
- * Russian is the default for staff. Language is remembered in localStorage.
+ * NODE_ENV in production builds.
+ *
+ * Language policy (contract §6): Russian is the firm default for staff —
+ * `defaultLanguage: "ru"` with NO LanguageDetector, so the browser's
+ * `navigator.language` is deliberately ignored. `LanguageStorage` remembers a
+ * user's switch (localStorage) across reloads. English is the fallback and the
+ * source of truth (every key's defaultValue).
  */
 import { FormatIcu } from "@tolgee/format-icu";
-import { DevTools, Tolgee, TolgeeProvider } from "@tolgee/react";
+import { DevTools, LanguageStorage, Tolgee, TolgeeProvider } from "@tolgee/react";
 import type { FC, ReactNode } from "react";
-
-const STORAGE_KEY = "coder-language";
-
-export const getLanguage = (): string =>
-	localStorage.getItem(STORAGE_KEY) ?? "ru";
-
-export const setLanguage = (lang: string): void => {
-	localStorage.setItem(STORAGE_KEY, lang);
-	window.location.reload();
-};
 
 export const tolgee = Tolgee()
 	.use(DevTools())
 	.use(FormatIcu())
+	.use(LanguageStorage())
 	.init({
-		language: getLanguage(),
+		defaultLanguage: "ru",
 		fallbackLanguage: "en",
+		availableLanguages: ["ru", "en"],
+		// Lazy per-language chunks: an English user never downloads the RU catalog.
 		staticData: {
 			en: () => import("./locales/en.json").then((m) => m.default),
 			ru: () => import("./locales/ru.json").then((m) => m.default),
